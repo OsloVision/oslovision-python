@@ -145,3 +145,6 @@ cython_debug/
 # Operating System Files
 .DS_Store
 Thumbs.db
+
+
+.pypirc
