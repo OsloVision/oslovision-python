@@ -49,7 +49,7 @@ class TestOsloVision(unittest.TestCase):
         mock_request.return_value = mock_response
 
         # Call the method
-        with open("test_image.jpg", "rb") as img_file:
+        with open("./test_image.jpg", "rb") as img_file:
             result = self.api.add_image("test_project", img_file)
 
         # Assert the result
