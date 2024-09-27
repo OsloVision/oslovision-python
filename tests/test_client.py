@@ -1,14 +1,22 @@
 import unittest
 from unittest.mock import patch, Mock
-from oslo_api import OsloAPI
+import os
+import sys
 
 
-class TestOsloAPI(unittest.TestCase):
+# Add the src directory to the Python path
+sys.path.insert(
+    0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src"))
+)
+from oslovision import OsloVision
+
+
+class TestOsloVision(unittest.TestCase):
 
     def setUp(self):
-        self.api = OsloAPI("https://app.oslo.vision/api/v1", "test_token")
+        self.api = OsloVision("test_token")
 
-    @patch("oslo_api.client.requests.request")
+    @patch("oslovision.client.requests.request")
     def test_test_api(self, mock_request):
         # Set up the mock
         mock_response = Mock()
@@ -28,7 +36,7 @@ class TestOsloAPI(unittest.TestCase):
             headers={"Authorization": "Bearer test_token"},
         )
 
-    @patch("oslo_api.client.requests.request")
+    @patch("oslovision.client.requests.request")
     def test_add_image(self, mock_request):
         # Set up the mock
         mock_response = Mock()
@@ -57,7 +65,7 @@ class TestOsloAPI(unittest.TestCase):
         self.assertIn("data", call_args[1])
         self.assertEqual(call_args[1]["data"]["project_identifier"], "test_project")
 
-    @patch("oslo_api.client.requests.request")
+    @patch("oslovision.client.requests.request")
     def test_create_annotation(self, mock_request):
         # Set up the mock
         mock_response = Mock()
@@ -90,7 +98,7 @@ class TestOsloAPI(unittest.TestCase):
         self.assertEqual(call_args[1]["json"]["project_identifier"], "test_project")
         self.assertEqual(call_args[1]["json"]["image_identifier"], "test_image_id")
 
-    @patch("oslo_api.client.requests.request")
+    @patch("oslovision.client.requests.request")
     def test_download_export(self, mock_request):
         # Set up the mock
         mock_response = Mock()

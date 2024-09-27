@@ -1,4 +1,4 @@
-from .client import OsloAPI
+from .client import OsloVision
 
 __all__ = ["OsloVision"]
-__version__ = "0.1.0"
+__version__ = "0.1.1"
