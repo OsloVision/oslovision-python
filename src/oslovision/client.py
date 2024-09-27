@@ -4,8 +4,8 @@ from io import IOBase
 
 
 class OsloVision:
-    def __init__(self, base_url: str, token: str):
-        self.base_url = base_url
+    def __init__(self, token: str):
+        self.base_url = "https://app.oslo.vision/api/v1"
         self.headers = {"Authorization": f"Bearer {token}"}
 
     def _make_request(self, method: str, endpoint: str, **kwargs) -> requests.Response:
