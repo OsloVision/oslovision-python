@@ -91,14 +91,15 @@ Create a new annotation for an image.
 
 Returns a dictionary with the created annotation's data.
 
-#### download_export(project_identifier: str, version: int) -> str
+#### download_export(project_identifier: str, version: int, output_dir: str) -> str
 
-Get the download URL for a dataset export.
+Download a dataset export and extract from the zip file.
 
 - `project_identifier`: The ID of the project
 - `version`: The version number of the export
+- `output_dir`: The directory to save the downloaded files (default: current directory)
 
-Returns the download URL as a string.
+Returns the path to the downloaded export.
 
 ## Contributing
 
