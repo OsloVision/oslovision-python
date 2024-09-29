@@ -131,7 +131,7 @@ class TestOsloVision(unittest.TestCase):
             )
 
             # Check if the file was "unzipped"
-            extracted_file_path = os.path.join(temp_dir, "test_file.txt")
+            extracted_file_path = os.path.join(temp_dir, "export_1", "test_file.txt")
             self.assertTrue(os.path.exists(extracted_file_path))
 
             # Check the content of the "unzipped" file

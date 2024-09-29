@@ -3,6 +3,7 @@ from typing import Dict, Union, Optional
 from io import IOBase, BytesIO
 import os
 import zipfile
+import re
 
 
 class OsloVision:
@@ -95,10 +96,22 @@ class OsloVision:
         if response.status_code == 200:
             # Check if the response is a zip file
             if response.headers.get("Content-Type") == "application/zip":
+                # Extract filename from Content-Disposition header if available
+                content_disposition = response.headers.get("Content-Disposition")
+                if content_disposition:
+                    match = re.search(r'filename="(.+?)"', content_disposition)
+                    if match:
+                        filename = match.group(1)
+                    else:
+                        filename = f"export_{version}.zip"
+                else:
+                    filename = f"export_{version}.zip"
+
                 # Create a BytesIO object from the response content
                 zip_content = BytesIO(response.content)
 
-                # Create the output directory if it doesn't exist
+                # Create the output directory with the same name as the zip file (without extension)
+                output_dir = os.path.join(output_dir, os.path.splitext(filename)[0])
                 os.makedirs(output_dir, exist_ok=True)
 
                 # Unzip the contents
