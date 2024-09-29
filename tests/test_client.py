@@ -2,6 +2,9 @@ import unittest
 from unittest.mock import patch, Mock
 import os
 import sys
+import io
+import zipfile
+import tempfile
 
 
 # Add the src directory to the Python path
@@ -100,25 +103,77 @@ class TestOsloVision(unittest.TestCase):
 
     @patch("oslovision.client.requests.request")
     def test_download_export(self, mock_request):
-        # Set up the mock
+        # Create a mock zip file
+        mock_zip_content = io.BytesIO()
+        with zipfile.ZipFile(mock_zip_content, "w") as mock_zip:
+            mock_zip.writestr("test_file.txt", "This is a test file")
+
+        # Set up the mock response
         mock_response = Mock()
-        mock_response.status_code = 302
-        mock_response.headers = {"Location": "https://example.com/download/export.zip"}
+        mock_response.status_code = 200
+        mock_response.headers = {"Content-Type": "application/zip"}
+        mock_response.content = mock_zip_content.getvalue()
         mock_request.return_value = mock_response
 
-        # Call the method
-        result = self.api.download_export("test_project", 1)
+        # Create a temporary directory for the test
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Call the method
+            output_path = self.api.download_export("test_project", 1, temp_dir)
 
-        # Assert the result
-        self.assertEqual(result, "https://example.com/download/export.zip")
+            # Assert the mock was called correctly
+            mock_request.assert_called_once_with(
+                "GET",
+                "https://app.oslo.vision/api/v1/exports/1",
+                params={"project_identifier": "test_project"},
+                headers={"Authorization": "Bearer test_token"},
+                allow_redirects=True,
+                stream=True,
+            )
 
-        # Assert the mock was called correctly
-        mock_request.assert_called_once()
-        call_args = mock_request.call_args
-        self.assertEqual(call_args[0][0], "GET")
-        self.assertEqual(call_args[0][1], "https://app.oslo.vision/api/v1/exports/1")
-        self.assertIn("params", call_args[1])
-        self.assertEqual(call_args[1]["params"]["project_identifier"], "test_project")
+            # Check if the file was "unzipped"
+            extracted_file_path = os.path.join(temp_dir, "test_file.txt")
+            self.assertTrue(os.path.exists(extracted_file_path))
+
+            # Check the content of the "unzipped" file
+            with open(extracted_file_path, "r") as f:
+                content = f.read()
+                self.assertEqual(content, "This is a test file")
+
+    @patch("oslovision.client.requests.request")
+    def test_download_export_not_zip(self, mock_request):
+        # Set up the mock response for a non-zip file
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.headers = {"Content-Type": "text/plain"}
+        mock_response.content = b"This is not a zip file"
+        mock_request.return_value = mock_response
+
+        # Create a temporary directory for the test
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Call the method and expect a ValueError
+            with self.assertRaises(ValueError) as context:
+                self.api.download_export("test_project", 1, temp_dir)
+
+            self.assertTrue(
+                "The downloaded content is not a zip file" in str(context.exception)
+            )
+
+    @patch("oslovision.client.requests.request")
+    def test_download_export_http_error(self, mock_request):
+        # Set up the mock response for an HTTP error
+        mock_response = Mock()
+        mock_response.status_code = 404
+        mock_request.return_value = mock_response
+
+        # Create a temporary directory for the test
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Call the method and expect an Exception
+            with self.assertRaises(Exception) as context:
+                self.api.download_export("test_project", 1, temp_dir)
+
+            self.assertTrue(
+                "Failed to download export: HTTP 404" in str(context.exception)
+            )
 
 
 if __name__ == "__main__":

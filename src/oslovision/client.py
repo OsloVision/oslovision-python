@@ -1,11 +1,15 @@
 import requests
 from typing import Dict, Union, Optional
-from io import IOBase
+from io import IOBase, BytesIO
+import os
+import zipfile
 
 
 class OsloVision:
-    def __init__(self, token: str):
-        self.base_url = "https://app.oslo.vision/api/v1"
+    def __init__(
+        self, token: str, base_url: Optional[str] = "https://app.oslo.vision/api/v1"
+    ):
+        self.base_url = base_url
         self.headers = {"Authorization": f"Bearer {token}"}
 
     def _make_request(self, method: str, endpoint: str, **kwargs) -> requests.Response:
@@ -65,17 +69,47 @@ class OsloVision:
         response = self._make_request("POST", "/annotations", json=data)
         return response.json()
 
-    def download_export(self, project_identifier: str, version: int) -> str:
-        """Download an export from the dataset."""
+    def download_export(
+        self, project_identifier: str, version: int, output_dir: Optional[str] = "."
+    ) -> str:
+        """
+        Download an export from the dataset, follow redirects, and unzip the contents.
+
+        Args:
+            project_identifier (str): The ID of the project
+            version (int): The version number of the export
+            output_dir (str): The directory where the unzipped files should be saved
+
+        Returns:
+            str: The path to the directory containing the unzipped files
+        """
         params = {"project_identifier": project_identifier}
         response = self._make_request(
-            "GET", f"/exports/{version}", params=params, allow_redirects=False
+            "GET",
+            f"/exports/{version}",
+            params=params,
+            allow_redirects=True,
+            stream=True,
         )
 
-        if response.status_code == 302:
-            return response.headers["Location"]
+        if response.status_code == 200:
+            # Check if the response is a zip file
+            if response.headers.get("Content-Type") == "application/zip":
+                # Create a BytesIO object from the response content
+                zip_content = BytesIO(response.content)
+
+                # Create the output directory if it doesn't exist
+                os.makedirs(output_dir, exist_ok=True)
+
+                # Unzip the contents
+                with zipfile.ZipFile(zip_content) as zip_ref:
+                    zip_ref.extractall(output_dir)
+
+                return output_dir
+            else:
+                raise ValueError("The downloaded content is not a zip file")
         else:
-            raise Exception("Export not found or not ready")
+            raise Exception(f"Failed to download export: HTTP {response.status_code}")
 
 
 # Usage example:
