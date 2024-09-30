@@ -49,8 +49,8 @@ annotation = api.create_annotation(
 print(f"Created annotation: {annotation['id']}")
 
 # Download an export
-download_url = api.download_export("your_project_identifier", 1)
-print(f"Export download URL: {download_url}")
+download_path = api.download_export("your_project_identifier", 1)
+print(f"Export downloaded to: {download_path}")
 ```
 
 ## API Reference
