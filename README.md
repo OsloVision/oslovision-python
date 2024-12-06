@@ -1,5 +1,12 @@
 ![oslo.vision](https://oslo.vision/images/blog/headers/header1.png)
 
+<p align="center">
+  <a href="https://oslo.vision">oslo.vision</a> • 
+  <a href="https://github.com/OsloVision/training-notebooks">training notebooks</a> • 
+  <a href="https://github.com/OsloVision/oslovision-python">sdk</a> • 
+  <a href="https://oslo.vision/blog">blog</a>
+</p>
+
 # OsloVision Python Client
 
 This Python package provides a client for interacting with the Oslo API, a platform for creating and managing datasets for machine learning projects. The client allows you to easily upload images, create annotations, and download dataset exports.
