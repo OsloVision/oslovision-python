@@ -1,0 +1,48 @@
+# OsloVision Python SDK
+
+> Python client library for the [Oslo Vision API](https://oslo.vision) — a platform for creating and managing image datasets for machine learning.
+
+## Installation
+
+```bash
+pip install oslovision
+```
+
+## Quick Start
+
+```python
+from oslovision import OsloVision
+
+api = OsloVision("your_api_token")
+
+# Upload an image
+with open("image.jpg", "rb") as f:
+    image = api.add_image("project_id", f)
+
+# Create a bounding-box annotation
+api.create_annotation("project_id", image["id"], "cat", x0=10, y0=20, width_px=100, height_px=150)
+
+# Download a dataset export
+api.download_export("project_id", version=1, output_dir="./data")
+```
+
+## API Reference
+
+### OsloVision(token: str, base_url: str = "https://app.oslo.vision/api/v1")
+
+Initialize the client with your API token.
+
+### Methods
+
+- **test_api() -> Dict**: Test API connectivity and token validity.
+- **add_image(project_identifier, image, split="train", status="pending") -> Dict**: Upload an image (file object or URL string) to a project.
+- **create_annotation(project_identifier, image_identifier, label, x0, y0, width_px, height_px) -> Dict**: Create a bounding-box annotation on an image.
+- **download_export(project_identifier, version, output_dir=".") -> str**: Download and unzip a dataset export. Returns the output directory path.
+
+## Links
+
+- [oslo.vision](https://oslo.vision)
+- [PyPI: oslovision](https://pypi.org/project/oslovision/)
+- [GitHub](https://github.com/OsloVision/oslovision-python)
+- [Training Notebooks](https://github.com/OsloVision/training-notebooks)
+- [README](https://github.com/OsloVision/oslovision-python/blob/main/README.md)
